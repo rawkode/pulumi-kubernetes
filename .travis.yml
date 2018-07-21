@@ -6,6 +6,19 @@ sudo: true # give us 7.5GB and >2 bursted cores.
 env:
     - CHANGE_MINIKUBE_NONE_USER=true
 before_install:
+    # Set up $KUBECONFIG.
+    - sudo apt-get install -y jq
+    - jq '.private_key = $key' --arg key $GKE_SERVICE_ACCOUNT_KEY build/travis/ci-service-key.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=build/travis/ci-service-key.json
+    - mkdir ~/.kube
+    - mv ./build/travis/kubeconfig ~/.kube/config
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl
+    - sudo mv ./kubectl /usr/local/bin/kubectl
+    - kubectl config set clusters.test-ci.certificate-authority-data "$KUBERNETES_CERT"
+    # - kubectl config set users.test-ci.auth-provider.config.access-token "$KUBERNETES_USER_TOKEN"
+    - kubectl get po
+
     - export PULUMI_ROOT=/opt/pulumi
     # Travis only fetches 50 commits by default, and we want them all so we can do git describe --tags
     # - git fetch --unshallow
@@ -26,18 +39,18 @@ before_install:
     - mkdir -p ~/.config/pip && echo -e "[global]\nextra-index-url = https://${PULUMI_API_TOKEN}@pypi.pulumi.com/simple" >> ~/.config/pip/pip.conf
     # Install the AWS CLI so that we can publish the resulting release (if applicable) at the end.
     - pip install --upgrade --user awscli
-    # Install kubectl
-    - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl
-    - sudo chmod +x kubectl 
-    - sudo mv kubectl /usr/local/bin/
-    # Install minukube
-    - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.2/minikube-linux-amd64
-    - sudo chmod +x minikube 
-    - sudo mv minikube /usr/local/bin/
-    # Start minikube with no VM driver 
-    - sudo minikube start --vm-driver=none --kubernetes-version=v1.9.0
-    # Register minikube context with kubernetes
-    - minikube update-context
+    # # Install kubectl
+    # - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl
+    # - sudo chmod +x kubectl
+    # - sudo mv kubectl /usr/local/bin/
+    # # Install minukube
+    # - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.2/minikube-linux-amd64
+    # - sudo chmod +x minikube
+    # - sudo mv minikube /usr/local/bin/
+    # # Start minikube with no VM driver
+    # - sudo minikube start --vm-driver=none --kubernetes-version=v1.9.0
+    # # Register minikube context with kubernetes
+    # - minikube update-context
 install:
     # Clone the Pulumi repo and use install-locked.sh to install Pulumi components based on our Gopkg.lock.
     - git clone https://github.com/pulumi/scripts ${GOPATH}/src/github.com/pulumi/scripts

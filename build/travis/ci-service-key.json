@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "pulumi-development",
+  "private_key_id": "5d02ff6d8d6cbce4bc5ba664c65f616e612aafa9",
+  "private_key": "",
+  "client_email": "ci-service@pulumi-development.iam.gserviceaccount.com",
+  "client_id": "107048476775192918515",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ci-service%40pulumi-development.iam.gserviceaccount.com"
+}
